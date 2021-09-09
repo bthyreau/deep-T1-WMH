@@ -1,11 +1,12 @@
 # DeepT1-WMH
 White Matter Hypointensities lesions for T1-weighted MRI images.
 
-It relies on a Convolutional Neural Network pre-trained on FLAIR segmentations using the large JPSC-AD cohort.
 
 ![anim](https://user-images.githubusercontent.com/590921/132649902-59f1007c-a24e-412e-8103-78187ac56c41.gif)
 
-For more details about its creation, refer the corresponding manuscript _under review_
+It relies on a Convolutional Neural Network pre-trained on FLAIR segmentations using the large JPSC-AD cohort.
+
+For more details about its creation, refer to the corresponding manuscript: [_now under review_]
 
 ## Requirement
 
@@ -29,14 +30,16 @@ To use the program, simply call:
 
 `./deepwmh.sh t1_image.nii.gz`
 
+(or it can be added to your PATH)
+
 To process multiple subjects, pass them as multiple arguments.
-`./deepwmh.sh subject_*.nii.gz`.
+`deepwmh.sh subject_*.nii.gz`.
 
 
 The resulting files will be named _t1_image_prob_wmh.nii.gz_ for the continous (0-255), thresholded as _t1_image_mask_wmh.nii.gz_, WMH segmentation mask; and _t1_image_mask_ROIs.nii.gz_ for the region labels. The lesion total and regional volumes statistics are available in _t1_image_wmh_in_lrois.csv_.  If multiple input images were specified, a summary table is generated as _all_subjects_wmh_report.csv_
 
 ## Issues
-The following message appears:
+If the following message appears:
 
     wgrid = self.grid @ self.tA
                       ^
