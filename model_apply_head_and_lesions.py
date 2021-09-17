@@ -287,7 +287,8 @@ class Cap5eModel(nn.Module):
         x = self.conv1x(x)
         return torch.sigmoid(x)
 ac = Cap5eModel()
-ac.load_state_dict(torch.load(scriptpath + "/torchparams/paramsNativeFlairAugLoop2andCortex_finalwide_train4096.pt", map_location=device), strict=False)
+#ac.load_state_dict(torch.load(scriptpath + "/torchparams/params_finalwide_train4096.pt", map_location=device), strict=False)
+ac.load_state_dict(torch.load(scriptpath + "/torchparams/params_finalwide_train7500.pt", map_location=device), strict=False)
 ac.to(device)
 ac.eval()
 
@@ -692,11 +693,14 @@ for fname in sys.argv[1:]:
         d = outseg[0, 0].T
         outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True)
         dnat = np.asarray(outDHW[0,0].T)
-        dnat[dnat < .5] = 0 # remove noise
+        dnat[dnat < .1] = 0 # remove noise
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = (dnat * 255).clip(0, 255).astype(np.uint8)
         nibabel.Nifti1Image(wdata.astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_prob_wmh"))
         nibabel.Nifti1Image((wdata >= 128).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_mask_wmh"))
-        wmh_vol_native = wdata.sum() / 255 * np.abs(np.linalg.det(img.affine))
+        
+        # use a PVE interpratation of probabilities at region borders to compute the full volume
+        # remap the ConvNet values (0~.75 to 0~1) to sharpen the histogram into more voxels at exact 1.
+        wmh_vol_native = (wdata.clip(0, 192) / 192. ).sum() * np.abs(np.linalg.det(img.affine))
         print(" WMH vol (mm^3) (native space): ", wmh_vol_native)
         #dnatL = dnat.astype(np.uint8).copy() # keep for screenshot
 
