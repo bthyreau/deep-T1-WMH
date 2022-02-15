@@ -36,7 +36,12 @@ To process multiple subjects, pass them as multiple arguments.
 `deepwmh.sh subject_*.nii.gz`.
 
 
-The resulting files will be named _t1_image_prob_wmh.nii.gz_ for the continous (0-255), thresholded as _t1_image_mask_wmh.nii.gz_, WMH segmentation mask; and _t1_image_mask_ROIs.nii.gz_ for the region labels. The lesion total and regional volumes statistics are available in _t1_image_wmh_in_lrois.csv_.  If multiple input images were specified, a summary table is generated as _all_subjects_wmh_report.csv_
+The resulting WMH segmentation mask will be named _t1_image_mask_wmh.nii.gz_, and _t1_image_mask_ROIs.nii.gz_ for the region labels (periventricular, deep-white, infracortical). The lesion total and regional volumes statistics are available in _t1_image_wmh_in_lrois.csv_. 
+
+If multiple input images were specified, a summary table is generated as _all_subjects_wmh_report.csv_
+
+Optionally, adding "-v" (verbose) in the command line will output more images, including the non-thresholded (probabilistic, 0-255) WMH-lesion segmentation output, named _t1_image_prob_wmh.nii.gz_ .
+
 
 ## Issues
 If the following message appears:

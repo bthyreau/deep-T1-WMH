@@ -400,10 +400,16 @@ if 1:
     ac1.to(device)
     ac1.eval()
 
+OUTPUT_MORE = False
 
 OUTPUT_RES64 = False
 OUTPUT_NATIVE = True
 OUTPUT_DEBUG = False
+
+if "-v" in sys.argv:
+    sys.argv.remove("-v")
+    OUTPUT_MORE = True
+
 
 allsubjects_accumulate_txt = []
 
@@ -524,7 +530,8 @@ for fname in sys.argv[1:]:
 
             dnat = np.asarray(F.grid_sample(torch.as_tensor(output, dtype=torch.float32, device=device)[None,None], wgridt, align_corners=True).cpu())[0,0]
             #nibabel.Nifti1Image(dnat, img.affine).to_filename(outfilename.replace("_tiv", "_tissues%d" % 0))
-            nibabel.Nifti1Image((dnat > .5).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_brain_mask"))
+            if OUTPUT_MORE:
+                nibabel.Nifti1Image((dnat > .5).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_brain_mask"))
             vol = (dnat > .5).sum() * np.abs(np.linalg.det(img.affine))
             print(" Estimated intra-cranial volume (mm^3) (native space): %d" % vol)
             scalar_output["eTIV"] = vol
@@ -550,7 +557,8 @@ for fname in sys.argv[1:]:
             if OUTPUT_NATIVE:
                 dnat = np.asarray(F.grid_sample(torch.as_tensor(output, dtype=torch.float32, device=device)[None,None], wgridt, align_corners=True).cpu()[0,0])
                 #nibabel.Nifti1Image(dnat, img.affine).to_filename(outfilename.replace("_tiv", "_tissues%d" % 2))
-                nibabel.Nifti1Image((dnat > .5).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_cerebrum_mask"))
+                if OUTPUT_MORE:
+                    nibabel.Nifti1Image((dnat > .5).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_cerebrum_mask"))
                 vol = (dnat > .5).sum() * np.abs(np.linalg.det(img.affine))
                 print(" Estimated cerebrum volume (mm^3) (native space): %d" % vol)
                 scalar_output["cerebrum_vol"] = vol
@@ -593,19 +601,20 @@ for fname in sys.argv[1:]:
             del out2r
 
 
+
         # output an ANTs-compatible matrix (AntsApplyTransforms -t)
         f3 = np.array([[1, 1, -1, -1],[1, 1, -1, -1], [-1, -1, 1, 1], [1, 1, 1, 1]]) # ANTs LPS
         MI = inv(M) * f3
         txt = """#Insight Transform File V1.0\nTransform: AffineTransform_float_3_3\nFixedParameters: 0 0 0\nParameters: """
         txt += " ".join(["%4.6f %4.6f %4.6f" % tuple(x) for x in MI[:3,:3].tolist()]) + " %4.6f %4.6f %4.6f\n" % (MI[0,3], MI[1,3], MI[2,3])
-        if 1:
+        if OUTPUT_MORE:
             open(outfilename.replace("_tiv.nii.gz", "_mni0Affine.txt"), "w").write(txt)
 
         u, s, vt = np.linalg.svd(MI[:3,:3])
         MI3rigid = u @ vt
         txt = """#Insight Transform File V1.0\nTransform: AffineTransform_float_3_3\nFixedParameters: 0 0 0\nParameters: """
         txt += " ".join(["%4.6f %4.6f %4.6f" % tuple(x) for x in MI3rigid.tolist()]) + " %4.6f %4.6f %4.6f\n" % (MI[0,3], MI[1,3], MI[2,3])
-        if 1:
+        if OUTPUT_MORE:
             open(outfilename.replace("_tiv.nii.gz", "_mni0Rigid.txt"), "w").write(txt)
 
     mniaffine_scaling = np.abs(np.linalg.det(M))
@@ -695,7 +704,8 @@ for fname in sys.argv[1:]:
         dnat = np.asarray(outDHW[0,0].T)
         dnat[dnat < .1] = 0 # remove noise
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = (dnat * 255).clip(0, 255).astype(np.uint8)
-        nibabel.Nifti1Image(wdata.astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_prob_wmh"))
+        if OUTPUT_MORE:
+            nibabel.Nifti1Image(wdata.astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_prob_wmh"))
         nibabel.Nifti1Image((wdata >= 128).astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_mask_wmh"))
         
         # use a PVE interpratation of probabilities at region borders to compute the full volume
@@ -706,6 +716,7 @@ for fname in sys.argv[1:]:
 
         scalar_output["wmh_vol"] = wmh_vol_native
 
+    if OUTPUT_DEBUG:
         d = outcortex[0, 0].T
         outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True)
         dnat = np.asarray(outDHW[0,0].T)
