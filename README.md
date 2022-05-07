@@ -1,12 +1,12 @@
 # DeepT1-WMH
-White Matter Hypointensities lesions for T1-weighted MRI images.
+White Matter Hypointensities lesions for **T1-weighted** MRI images.
 
 
 ![anim](https://user-images.githubusercontent.com/590921/132649902-59f1007c-a24e-412e-8103-78187ac56c41.gif)
 
 It relies on a Convolutional Neural Network pre-trained on FLAIR segmentations using the large JPSC-AD cohort.
 
-For more details about its creation, refer to the corresponding manuscript: [_now under review_]
+For background and technical details about its creation, refers to this corresponding _Human Brain Mapping_ manuscript: http://doi.org/10.1002/hbm.25899
 
 ## Requirement
 
