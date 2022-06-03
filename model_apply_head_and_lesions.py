@@ -440,12 +440,12 @@ for fname in sys.argv[1:]:
                 img._affine = img.get_qform() # simplify later ANTs compatibility
                 print("This image has an sform defined, ignoring it - work in scanner space using the qform")
 
+        d = img.get_fdata(caching="unchanged", dtype=np.float32)
     except:
         open(fname + ".warning.txt", "a").write("can't open the file\n")
         print(" *** Error: can't open file. Skip")
         continue
 
-    d = img.get_fdata(caching="unchanged", dtype=np.float32)
     intens_info = {"min":d.min(), "max":d.max(), "mean":d.mean(), "std":d.std()}
     while len(d.shape) > 3:
         print("Warning: this looks like a timeserie. Picking the first volume only")
