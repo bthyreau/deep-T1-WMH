@@ -699,9 +699,9 @@ for fname in sys.argv[1:]:
 
         wdata = np.zeros(img.shape[:3], np.uint8)
 
-        d = outseg[0, 0].T
+        d = outseg[0, 0].permute(2, 1, 0)
         outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True)
-        dnat = np.asarray(outDHW[0,0].T)
+        dnat = np.asarray(outDHW[0,0].permute(2,1,0))
         dnat[dnat < .1] = 0 # remove noise
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = (dnat * 255).clip(0, 255).astype(np.uint8)
         if OUTPUT_MORE:
@@ -743,19 +743,19 @@ for fname in sys.argv[1:]:
             outputfn = outfilename.replace("_tiv", "_afcrop_labelmap_%d" % i)
             nibabel.Nifti1Image(labelmap.astype(np.uint8), imgcroproi_affine).to_filename(outputfn)
 
-        roisize = scipy.ndimage.measurements.sum(1, labels=labelmap, index=[1,2,3,4])
+        roisize = scipy.ndimage.sum(1, labels=labelmap, index=[1,2,3,4])
         voxvol = np.abs(np.linalg.det(imgcroproi_affine))
         scalar_output["roi_vol"] = roisize * voxvol / mniaffine_scaling
                 
-        wmh_lesions_vox_per_roi = scipy.ndimage.measurements.sum((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4]) / 255.
-        wmh_lesions_vox_per_roi_std = np.sqrt(scipy.ndimage.measurements.variance((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4])) / 255.
+        wmh_lesions_vox_per_roi = scipy.ndimage.sum((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4]) / 255.
+        wmh_lesions_vox_per_roi_std = np.sqrt(scipy.ndimage.variance((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4])) / 255.
         voxvol = np.abs(np.linalg.det(imgcroproi_affine))
         scalar_output["wmh_vol_per_roi"] = wmh_lesions_vox_per_roi * voxvol / mniaffine_scaling
         #scalar_output["wmh_vol_per_roi_std"] = wmh_lesions_vox_per_roi_std * voxvol / mniaffine_scaling
 
-        d = torch.from_numpy(labelmap).to(torch.float32).T
+        d = torch.from_numpy(labelmap).to(torch.float32).permute(2,1,0)
         outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True, mode="nearest")
-        dnat = np.asarray(outDHW[0,0].T)
+        dnat = np.asarray(outDHW[0,0].permute(2,1,0))
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = dnat
         nibabel.Nifti1Image(wdata, img.affine).to_filename(outfilename.replace("_tiv", "_mask_ROIs"))
         #print("ROI time %4.2fs" % (time.time() - Tiroi))
