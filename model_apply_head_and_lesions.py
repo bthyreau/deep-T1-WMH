@@ -417,6 +417,15 @@ if "-v" in sys.argv:
     sys.argv.remove("-v")
     OUTPUT_MORE = True
 
+OUTPUT_SPLITFRONTAL = False
+if "-splitfrontal" in sys.argv: # Temporary cmdline option, API may change
+    sys.argv.remove("-splitfrontal")
+    OUTPUT_SPLITFRONTAL = True
+
+OUTPUT_SPLITFRONTAL_LR = False
+if "-splitfrontalLR" in sys.argv: # Temporary cmdline option, API may change
+    sys.argv.remove("-splitfrontalLR")
+    OUTPUT_SPLITFRONTAL_LR = True
 
 allsubjects_accumulate_txt = []
 
@@ -762,7 +771,88 @@ for fname in sys.argv[1:]:
              'roisize_deepwhite',
              'roisize_infracortical',
              'roisize_innergray',
-             '\n'])
+             ]) + '\n'
+
+        if OUTPUT_SPLITFRONTAL:
+            print("Using a different ROI definition, using an additional (frontal) mask. Changing label of rois to +10 for it")
+            frontalmask = nibabel.load(scriptpath + "/frontalMNI_box.nii.gz").get_fdata() > 0
+            labelmap[(labelmap > 0) & (frontalmask > 0)] += 10 # frontal pushed up
+
+            roi_index_list = [1,2,3,4, 11,12,13,14]
+            txtH = ",".join(['eTIV',
+             'wmh_vol_total',
+
+             'wmh_vol_periventricular_back',
+             'wmh_vol_deepwhite_back',
+             'wmh_vol_infracortical_back',
+             'wmh_vol_innergray_back',
+
+             'wmh_vol_periventricular_front',
+             'wmh_vol_deepwhite_front',
+             'wmh_vol_infracortical_front',
+             'wmh_vol_innergray_front',
+
+             'roisize_periventricular_back',
+             'roisize_deepwhite_back',
+             'roisize_infracortical_back',
+             'roisize_innergray_back',
+
+             'roisize_periventricular_front',
+             'roisize_deepwhite_front',
+             'roisize_infracortical_front',
+             'roisize_innergray_front',
+             ]) + '\n'
+
+        if OUTPUT_SPLITFRONTAL_LR:
+            print("Using a different ROI definition, using an additional (frontal) mask. Changing label of rois to +10 for it")
+            frontalmask = nibabel.load(scriptpath + "/frontalMNI_box.nii.gz").get_fdata() > 0
+            labelmap[(labelmap > 0) & (frontalmask > 0)] += 10 # frontal pushed up
+            rightsidemask = nibabel.load(scriptpath + "/rightsideMNI_box.nii.gz").get_fdata() > 0
+            labelmap[(labelmap > 0) & (rightsidemask > 0)] += 30 # rightside pushed up
+
+            roi_index_list = [1,2,3,4, 11,12,13,14, 31,32,33,34,  41,42,43,44]
+            txtH = ",".join(['eTIV',
+             'wmh_vol_total',
+             'wmh_vol_periventricular_back_L',
+             'wmh_vol_deepwhite_back_L',
+             'wmh_vol_infracortical_back_L',
+             'wmh_vol_innergray_back_L',
+
+             'wmh_vol_periventricular_front_L',
+             'wmh_vol_deepwhite_front_L',
+             'wmh_vol_infracortical_front_L',
+             'wmh_vol_innergray_front_L',
+
+             'wmh_vol_periventricular_back_R',
+             'wmh_vol_deepwhite_back_R',
+             'wmh_vol_infracortical_back_R',
+             'wmh_vol_innergray_back_R',
+
+             'wmh_vol_periventricular_front_R',
+             'wmh_vol_deepwhite_front_R',
+             'wmh_vol_infracortical_front_R',
+             'wmh_vol_innergray_front_R',
+
+             'roisize_periventricular_back_L',
+             'roisize_deepwhite_back_L',
+             'roisize_infracortical_back_L',
+             'roisize_innergray_back_L',
+
+             'roisize_periventricular_front_L',
+             'roisize_deepwhite_front_L',
+             'roisize_infracortical_front_L',
+             'roisize_innergray_front_L',
+
+             'roisize_periventricular_back_R',
+             'roisize_deepwhite_back_R',
+             'roisize_infracortical_back_R',
+             'roisize_innergray_back_R',
+
+             'roisize_periventricular_front_R',
+             'roisize_deepwhite_front_R',
+             'roisize_infracortical_front_R',
+             'roisize_innergray_front_R',
+             ]) + '\n'
 
         roisize = scipy.ndimage.sum(1, labels=labelmap, index=roi_index_list)
         voxvol = np.abs(np.linalg.det(imgcroproi_affine))
