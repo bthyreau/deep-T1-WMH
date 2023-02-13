@@ -176,6 +176,13 @@ np.array([[  -2.85714293,   -0.        ,    0.        ,   90.        ],
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 
 device = torch.device("cpu")
+
+if "-cuda" in sys.argv:
+    print("Using CUDA")
+    sys.argv.remove("-cuda")
+    device = torch.device("cuda")
+
+
 net = HeadModel()
 net.to(device)
 net.load_state_dict(torch.load(scriptpath + "/torchparams/params_head_00075_00000.pt", map_location=device))
