@@ -487,7 +487,7 @@ for fname in sys.argv[1:]:
     ## Head priors
         T = time.time()
         with torch.no_grad():
-            out1t = net(d_orr)
+            out1t = net(d_orr.to(device))
         out1 = np.asarray(out1t.cpu())
         #print("Head Inference in ", time.time() - T)
 
@@ -580,7 +580,7 @@ for fname in sys.argv[1:]:
     ## MNI affine
         T = time.time()
         with torch.no_grad():
-            wc1, tA = netAff(out1t[:,[1,3]] * brainmask_cc)
+            wc1, tA = netAff(out1t[:,[1,3]] * brainmask_cc.to(device))
 
         wnat = np.linalg.lstsq(bbox_world(img.affine, img.shape[:3]), bbox_one @ revaff1, rcond=None)[0]
         wmni = np.linalg.lstsq(bbox_world(affine64_mni, (64,64,64)), bbox_one, rcond=None)[0]
@@ -700,8 +700,8 @@ for fname in sys.argv[1:]:
         wdata = np.zeros(img.shape[:3], np.uint8)
 
         d = outseg[0, 0].permute(2, 1, 0)
-        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True)
-        dnat = np.asarray(outDHW[0,0].permute(2,1,0))
+        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]).to(device), align_corners=True)
+        dnat = np.asarray(outDHW[0,0].permute(2,1,0).cpu())
         dnat[dnat < .1] = 0 # remove noise
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = (dnat * 255).clip(0, 255).astype(np.uint8)
         if OUTPUT_MORE:
@@ -717,9 +717,9 @@ for fname in sys.argv[1:]:
         scalar_output["wmh_vol"] = wmh_vol_native
 
     if OUTPUT_DEBUG:
-        d = outcortex[0, 0].T
-        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True)
-        dnat = np.asarray(outDHW[0,0].T)
+        d = outcortex[0, 0].permute(2,1,0)
+        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]).to(device), align_corners=True)
+        dnat = np.asarray(outDHW[0,0].permute(2,1,0).cpu())
         dnat[dnat < .5] = 0 # remove noise
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = (dnat * 255).clip(0, 255).astype(np.uint8)
         nibabel.Nifti1Image(wdata.astype("uint8"), img.affine).to_filename(outfilename.replace("_tiv", "_corticalribbon"))
@@ -736,39 +736,47 @@ for fname in sys.argv[1:]:
             r, t = outrois.max(axis=1)
             labelmap = (t + 1).to(torch.float32)
             labelmap[r < .25] = 0
-            labelmap = np.asarray(labelmap[0])
+            labelmap = np.asarray(labelmap[0].cpu())
             del r, t
 
         if OUTPUT_DEBUG:
             outputfn = outfilename.replace("_tiv", "_afcrop_labelmap_%d" % i)
             nibabel.Nifti1Image(labelmap.astype(np.uint8), imgcroproi_affine).to_filename(outputfn)
+      
+        if 1:
+            roi_index_list = [1,2,3,4]
+            txtH = ",".join(['eTIV',
+             'wmh_vol_total',
+             'wmh_vol_periventricular',
+             'wmh_vol_deepwhite',
+             'wmh_vol_infracortical',
+             'wmh_vol_innergray',
+             'roisize_periventricular',
+             'roisize_deepwhite',
+             'roisize_infracortical',
+             'roisize_innergray',
+             '\n'])
 
-        roisize = scipy.ndimage.sum(1, labels=labelmap, index=[1,2,3,4])
+        roisize = scipy.ndimage.sum(1, labels=labelmap, index=roi_index_list)
         voxvol = np.abs(np.linalg.det(imgcroproi_affine))
         scalar_output["roi_vol"] = roisize * voxvol / mniaffine_scaling
                 
-        wmh_lesions_vox_per_roi = scipy.ndimage.sum((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4]) / 255.
-        wmh_lesions_vox_per_roi_std = np.sqrt(scipy.ndimage.variance((wmh_map > 128) * wmh_map, labels=labelmap, index=[1,2,3,4])) / 255.
+        wmh_lesions_vox_per_roi = scipy.ndimage.sum((wmh_map > 128) * wmh_map, labels=labelmap, index=roi_index_list) / 255.
+        wmh_lesions_vox_per_roi_std = np.sqrt(scipy.ndimage.variance((wmh_map > 128) * wmh_map, labels=labelmap, index=roi_index_list)) / 255.
         voxvol = np.abs(np.linalg.det(imgcroproi_affine))
         scalar_output["wmh_vol_per_roi"] = wmh_lesions_vox_per_roi * voxvol / mniaffine_scaling
         #scalar_output["wmh_vol_per_roi_std"] = wmh_lesions_vox_per_roi_std * voxvol / mniaffine_scaling
 
-        d = torch.from_numpy(labelmap).to(torch.float32).permute(2,1,0)
-        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]), align_corners=True, mode="nearest")
-        dnat = np.asarray(outDHW[0,0].permute(2,1,0))
+        d = torch.from_numpy(labelmap).to(torch.float32).permute(2,1,0).to(device)
+        outDHW = F.grid_sample(d[None,None], torch.tensor(DHW3[None]).to(device), align_corners=True, mode="nearest")
+        dnat = np.asarray(outDHW[0,0].permute(2,1,0).cpu())
         wdata[pmin[0]:pmin[0]+pwidth[0], pmin[1]:pmin[1]+pwidth[1], pmin[2]:pmin[2]+pwidth[2]] = dnat
         nibabel.Nifti1Image(wdata, img.affine).to_filename(outfilename.replace("_tiv", "_mask_ROIs"))
         #print("ROI time %4.2fs" % (time.time() - Tiroi))
 
     if 1:
-        #txt = "eTIV,wmh_vol,deep,white,peri,deep_sd,white_sd,peri_sd,num_infarct\n"
-        txtH = "eTIV,wmh_vol_total,wmh_vol_periventricular,wmh_vol_deepwhite,wmh_vol_infracortical,wmh_vol_innergray,roisize_periventricular,roisize_deepwhite,roisize_infracortical,roisize_innergray\n"
-        txt = "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n" % ((
-            scalar_output.get("eTIV_mni", 0),
-            scalar_output.get("wmh_vol")) +
-            tuple(scalar_output.get("wmh_vol_per_roi")) +
-            tuple(scalar_output.get("roi_vol"))
-            )
+        printed_values = [scalar_output.get("eTIV_mni", 0), scalar_output.get("wmh_vol"), *scalar_output.get("wmh_vol_per_roi"), *scalar_output.get("roi_vol"),]
+        txt = ",".join(["%d" % x for x in printed_values]) + "\n"
 
         open(outfilename.replace("_tiv.nii.gz", "_wmh_in_lrois.csv"), "w").write(txtH + txt)
         print(" Saving scalars stats as", outfilename.replace("_tiv.nii.gz", "_wmh_in_lrois.csv"))
