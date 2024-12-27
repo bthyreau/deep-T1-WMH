@@ -608,12 +608,12 @@ for fname in sys.argv[1:]:
             # Output MNI, mostly for debug, save in box64, uint8
             out2 = np.asarray(wc1.to("cpu"))
             out2 = np.clip((out2 * 255), 0, 255).astype("uint8")
-            nibabel.Nifti1Image(out2[0,0], affine64_mni).to_filename(outfilename.replace("_tiv", "_mniwrapc1"))
+            nibabel.Nifti1Image(out2[0,0], affine64_mni).to_filename(outfilename.replace("_tiv", "_mniwarpc1"))
             del out2
         if 0:
             out2r = np.asarray(netAff.resample_other(d_orr).cpu())
-            out2r = (out2r - out2r.min()) * 255 / out2r.ptp()
-            nibabel.Nifti1Image(out2r[0,0].astype("uint8"), affine64_mni).to_filename(outfilename.replace("_tiv", "_mniwrap"))
+            out2r = (out2r - out2r.min()) * 255 / np.ptp(out2r)
+            nibabel.Nifti1Image(out2r[0,0].astype("uint8"), affine64_mni).to_filename(outfilename.replace("_tiv", "_mniwarp"))
             del out2r
 
 
@@ -653,7 +653,7 @@ for fname in sys.argv[1:]:
 
     if OUTPUT_DEBUG:
         d_in = np.asarray(dout[0,0].cpu()) # back to numpy since torch does not support negative step/strides
-        d_in_u8 = (((d_in - d_in.min()) / d_in.ptp()) * 255).astype("uint8")
+        d_in_u8 = (((d_in - d_in.min()) / np.ptp(d_in)) * 255).astype("uint8")
         nibabel.Nifti1Image(d_in_u8, imgcroproi_affine).to_filename(outfilename.replace("_tiv", "_afcrop"))
 
     d_in = dout
@@ -872,7 +872,7 @@ for fname in sys.argv[1:]:
         #print("ROI time %4.2fs" % (time.time() - Tiroi))
 
     if 1:
-        printed_values = [scalar_output.get("eTIV_mni", 0), scalar_output.get("wmh_vol"), *scalar_output.get("wmh_vol_per_roi"), *scalar_output.get("roi_vol"),]
+        printed_values = [scalar_output.get("eTIV", 0), scalar_output.get("wmh_vol"), *scalar_output.get("wmh_vol_per_roi"), *scalar_output.get("roi_vol"),]
         txt = ",".join(["%d" % x for x in printed_values]) + "\n"
 
         open(outfilename.replace("_tiv.nii.gz", "_wmh_in_lrois.csv"), "w").write(txtH + txt)
