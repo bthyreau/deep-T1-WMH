@@ -776,7 +776,7 @@ def main():
 
             if OUTPUT_SPLITFRONTAL:
                 print("Using a different ROI definition, using an additional (frontal) mask. Changing label of rois to +10 for it")
-                frontalmask = nibabel.load(scriptpath + "/frontalMNI_box.nii.gz").get_fdata() > 0
+                frontalmask = nibabel.load(scriptpath + "/_frontalMNI_box.nii.gz").get_fdata() > 0
                 labelmap[(labelmap > 0) & (frontalmask > 0)] += 10 # frontal pushed up
 
                 roi_index_list = [1,2,3,4, 11,12,13,14]
@@ -806,9 +806,9 @@ def main():
 
             if OUTPUT_SPLITFRONTAL_LR:
                 print("Using a different ROI definition, using an additional (frontal) mask. Changing label of rois to +10 for it")
-                frontalmask = nibabel.load(scriptpath + "/frontalMNI_box.nii.gz").get_fdata() > 0
+                frontalmask = nibabel.load(scriptpath + "/_frontalMNI_box.nii.gz").get_fdata() > 0
                 labelmap[(labelmap > 0) & (frontalmask > 0)] += 10 # frontal pushed up
-                rightsidemask = nibabel.load(scriptpath + "/rightsideMNI_box.nii.gz").get_fdata() > 0
+                rightsidemask = nibabel.load(scriptpath + "/_rightsideMNI_box.nii.gz").get_fdata() > 0
                 labelmap[(labelmap > 0) & (rightsidemask > 0)] += 30 # rightside pushed up
 
                 roi_index_list = [1,2,3,4, 11,12,13,14, 31,32,33,34,  41,42,43,44]
