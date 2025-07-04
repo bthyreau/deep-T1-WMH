@@ -20,7 +20,7 @@ Just clone or download this repository.
 
 If you have the uv packaging tool ( https://docs.astral.sh/uv/ ), you can do 
 
-`uv run deepwmh.py example_brain_t1.nii.gz`
+`uv run deepwmh.py t1_image.nii.gz`
 
 which should take care of downloading the dependencies in the first run. 
 
