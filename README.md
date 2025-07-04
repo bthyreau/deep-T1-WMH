@@ -48,7 +48,7 @@ The resulting WMH segmentation mask will be named _t1_image_mask_wmh.nii.gz_, an
 
 If multiple input images were specified, a summary table is generated as _all_subjects_wmh_report.csv_
 
-Optionally, adding "-v" (verbose) in the command line will output more images, including the non-thresholded (probabilistic, 0-255) WMH-lesion segmentation output, named _t1_image_prob_wmh.nii.gz_ .
+Optionally, adding "-v" (verbose) in the command line will output more images, including the non-thresholded (probabilistic, 0-255) WMH-lesion segmentation output, named _t1_image_prob_wmh.nii.gz_ , as well as an approximate brain mask (the same as _hippodeep_).
 
 ## License
 This program is MIT Licensed
