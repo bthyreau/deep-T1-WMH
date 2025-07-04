@@ -218,7 +218,7 @@ class Cap5eModel(nn.Module):
                                    )
 
         self.ma5 = nn.MaxPool3d((2,2,1), return_indices=True)
-        self.block5 = nn.Sequential( nn.Conv3d(64, 128, 3, padding=1),  nn.InstanceNorm3d(64), nn.ReLU(inplace=True),
+        self.block5 = nn.Sequential( nn.Conv3d(64, 128, 3, padding=1),  nn.InstanceNorm3d(128), nn.ReLU(inplace=True),
                                      nn.Conv3d(128, 64, 3, padding=1),  nn.ReLU(inplace=True),
                                    )
 
