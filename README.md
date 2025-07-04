@@ -10,7 +10,7 @@ For background and technical details about its creation, refers to this correspo
 
 ## Requirement
 
-This program requires Python 3, with the PyTorch library, version > 1.4.0., although >=1.7 is highly recommended for improved memory usage
+This program requires Python 3, with the PyTorch library
 
 No GPU is required
 
@@ -18,10 +18,16 @@ No GPU is required
 
 Just clone or download this repository.
 
-In addition to PyTorch, the code requires scipy and nibabel.
+If you have the uv packaging tool ( https://docs.astral.sh/uv/ ), you can do 
 
-If not pre-installed, a simple way to install python3 from scratch may be to use a Anaconda (anaconda.com) environment then
-* install scipy (`conda install scipy` or `pip install scipy`) and  nibabel (`pip install nibabel`)
+`uv run deepwmh.py example_brain_t1.nii.gz`
+
+which should take care of downloading the dependencies in the first run. 
+
+Otherwise, you need to setup a python3 environment on your machine : in addition to PyTorch, scipy and nibabel are required.
+
+If not pre-installed, you could use uv or Anaconda ( https://www.anaconda.com ) to to install python3, then
+* install scipy and nibabel (`conda install scipy nibabel` or `pip install scipy nibabel`)
 * get pytorch for Python/CPU from `https://pytorch.org/get-started/locally/`. CUDA is not necessary.
 
 
@@ -35,6 +41,8 @@ To use the program, simply call:
 To process multiple subjects, pass them as multiple arguments.
 `deepwmh.sh subject_*.nii.gz`.
 
+(or `uv run deepwmh.py subject_*.nii.gz`)
+
 
 The resulting WMH segmentation mask will be named _t1_image_mask_wmh.nii.gz_, and _t1_image_mask_ROIs.nii.gz_ for the region labels (periventricular, deep-white, infracortical). The lesion total and regional volumes statistics are available in _t1_image_wmh_in_lrois.csv_. 
 
@@ -42,12 +50,7 @@ If multiple input images were specified, a summary table is generated as _all_su
 
 Optionally, adding "-v" (verbose) in the command line will output more images, including the non-thresholded (probabilistic, 0-255) WMH-lesion segmentation output, named _t1_image_prob_wmh.nii.gz_ .
 
+## License
+This program is MIT Licensed
 
-## Issues
-If the following message appears:
-
-    wgrid = self.grid @ self.tA
-                      ^
-    SyntaxError: invalid syntax
-
-It probably means that the system python was found. Make sure python 3 is in your path or edit _deepwmh.sh_ with a suitable path.
+Please consider citing the _Human Brain Mapping_ manuscript: http://doi.org/10.1002/hbm.25899
