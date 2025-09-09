@@ -22,7 +22,7 @@ If you have the uv packaging tool ( https://docs.astral.sh/uv/ ), you can do
 
 `uv run deepwmh.py t1_image.nii.gz`
 
-which should take care of downloading the dependencies in the first run. 
+which should take care of downloading the dependencies in the first run. (or alternatively, runs `uv sync` in it)
 
 Otherwise, you need to setup a python3 environment on your machine : in addition to PyTorch, scipy and nibabel are required.
 
@@ -36,7 +36,7 @@ To use the program, simply call:
 
 `./deepwmh.sh t1_image.nii.gz`
 
-(or it can be added to your PATH)
+(this script can be be added to your PATH on linked from somewhere in your PATH such as ~/.local/bin)
 
 To process multiple subjects, pass them as multiple arguments.
 `deepwmh.sh subject_*.nii.gz`.
