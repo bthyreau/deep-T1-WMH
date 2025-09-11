@@ -6,7 +6,8 @@ description="White Matter Hypointensities lesions for T1-weighted MRI images."
 dependencies = [
   "torch",
   "nibabel",
-  "scipy"
+  "scipy",
+  "matplotlib",
 ]
 
 [python.pip]
